@@ -1,0 +1,495 @@
+definitions:
+  domain.Mission:
+    properties:
+      cat_id:
+        type: integer
+      completed:
+        type: boolean
+      created_at:
+        type: string
+      id:
+        type: integer
+      targets:
+        items:
+          $ref: '#/definitions/domain.Target'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  domain.Target:
+    properties:
+      completed:
+        type: boolean
+      country:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      mission_id:
+        type: integer
+      name:
+        type: string
+      notes:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.CatRequest:
+    properties:
+      breed:
+        example: Siamese
+        type: string
+      name:
+        example: Tom
+        maxLength: 50
+        minLength: 2
+        type: string
+      salary:
+        example: 1200.5
+        minimum: 0
+        type: number
+      years_of_experience:
+        example: 3
+        maximum: 50
+        minimum: 0
+        type: integer
+    required:
+    - breed
+    - name
+    - salary
+    - years_of_experience
+    type: object
+  handler.CatResponse:
+    properties:
+      breed:
+        example: Siamese
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Tom
+        type: string
+      salary:
+        example: 1200.5
+        type: number
+      years_of_experience:
+        example: 3
+        type: integer
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handler.MissionDTO:
+    properties:
+      cat_id:
+        example: 123
+        type: integer
+      completed:
+        example: false
+        type: boolean
+    type: object
+  handler.TargetDTO:
+    properties:
+      completed:
+        example: false
+        type: boolean
+      country:
+        example: Country name
+        type: string
+      name:
+        example: Target name
+        type: string
+      notes:
+        example: Additional notes
+        type: string
+    type: object
+  handler.UpdateSalaryRequest:
+    properties:
+      salary:
+        example: 1300.75
+        minimum: 0
+        type: number
+    required:
+    - salary
+    type: object
+info:
+  contact: {}
+paths:
+  /cats:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.CatResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all cats
+      tags:
+      - cats
+    post:
+      consumes:
+      - application/json
+      description: Create a new cat with the provided details.
+      parameters:
+      - description: Cat details
+        in: body
+        name: cat
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CatRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.CatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new cat
+      tags:
+      - cats
+  /cats/{id}:
+    delete:
+      parameters:
+      - description: Cat ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a cat by ID
+      tags:
+      - cats
+    get:
+      parameters:
+      - description: Cat ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a cat by ID
+      tags:
+      - cats
+  /cats/{id}/salary:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Cat ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New salary
+        in: body
+        name: salary
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateSalaryRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a cat's salary
+      tags:
+      - cats
+  /missions:
+    get:
+      description: Retrieve a list of all missions.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Mission'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all missions
+      tags:
+      - Missions
+    post:
+      consumes:
+      - application/json
+      description: Create a new mission with the provided details.
+      parameters:
+      - description: Mission details
+        in: body
+        name: mission
+        required: true
+        schema:
+          $ref: '#/definitions/handler.MissionDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Mission'
+        "400":
+          description: Wrong request format
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Create a new mission
+      tags:
+      - Missions
+  /missions/{id}:
+    delete:
+      description: Delete a mission by its ID.
+      parameters:
+      - description: Mission ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid mission ID
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete a mission
+      tags:
+      - Missions
+    get:
+      description: Retrieve a mission by its ID.
+      parameters:
+      - description: Mission ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Mission'
+        "400":
+          description: Invalid mission ID
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Mission not found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get a mission by ID
+      tags:
+      - Missions
+    put:
+      consumes:
+      - application/json
+      description: Update an existing mission with the provided details.
+      parameters:
+      - description: Mission ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Mission details
+        in: body
+        name: mission
+        required: true
+        schema:
+          $ref: '#/definitions/handler.MissionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Mission'
+        "400":
+          description: Invalid mission ID or request format
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update a mission
+      tags:
+      - Missions
+  /missions/{id}/cat/{catID}:
+    post:
+      description: Assign a cat to a mission by their IDs.
+      parameters:
+      - description: Mission ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Cat ID
+        in: path
+        name: catID
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Wrong request format
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Assign Cat to Mission
+      tags:
+      - Missions
+  /missions/{id}/targets:
+    post:
+      consumes:
+      - application/json
+      description: Add multiple targets to a mission by its ID.
+      parameters:
+      - description: Mission ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Targets to add
+        in: body
+        name: targets
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/handler.TargetDTO'
+          type: array
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Add Targets to Mission
+      tags:
+      - Missions
+  /targets/{id}:
+    delete:
+      description: Delete a target by its ID.
+      parameters:
+      - description: Target ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid target ID
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete Target
+      tags:
+      - Targets
+    put:
+      consumes:
+      - application/json
+      description: Update an existing target by its ID.
+      parameters:
+      - description: Target ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Target details
+        in: body
+        name: target
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Target'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Target'
+        "400":
+          description: Wrong request format or invalid target ID
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update Target
+      tags:
+      - Targets
+swagger: "2.0"
